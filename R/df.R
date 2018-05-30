@@ -15,3 +15,7 @@ get_xattr_df <- function(path, follow_symlinks = TRUE) {
   xdf
 
 }
+
+#' @rdname get_xattr_df
+#' @export
+read_xattrs <- get_xattr_df

@@ -20,17 +20,24 @@ convert_plist <- function(path) {
 
   if (plutil == "plistutil") {
     sys::exec_internal(
-      plutil, arg=c("-i", path)
+      plutil,
+      arg=c("-i", path),
+      error = FALSE
     ) -> res
   } else {
     sys::exec_internal(
       plutil,
-      args = c("-convert", "xml1", path, "-o", "-")
+      args = c("-convert", "xml1", path, "-o", "-"),
+      error = FALSE
     ) -> res
   }
 
-  out <- xml2::read_xml(res$stdout)
-
-  xml2::as_list(out)
+  if (!is.null(res$stdout)) {
+    out <- s_read_xml(res$stdout)
+    if (is.null(out$result)) return(list(NA))
+    xml2::as_list(out$result)
+  } else {
+    return(list(NA))
+  }
 
 }

@@ -1,0 +1,16 @@
+#' Retrieve a data frame of xattr names, sizes and (raw) contents for a target path
+#'
+#' @md
+#' @param path path target path (file or dir); this is auto-expanded
+#' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
+#' @export
+get_xattr_df <- function(path, follow_symlinks = TRUE) {
+
+  xattr_list <- rcpp_get_xattr_df(path, follow_symlinks)
+  class(xattr_list$contents) <- c("AsIs", "list")
+  xdf <- as.data.frame(xattr_list, stringsAsFactors=FALSE)
+  attributes(xdf$contents) <- NULL
+  class(xdf) <- c("tbl_df", "tbl", "data.frame")
+  xdf
+
+}

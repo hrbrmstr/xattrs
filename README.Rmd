@@ -1,0 +1,136 @@
+---
+output: rmarkdown::github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# xattrs
+
+Work With Filesystem Object Extended Attributes
+
+## Description
+
+Filesystem path target extended attributes store extra, customizable, small bits of info. For example, author name, file character encoding, short comments, security status, etc. Methods are provided to list, extract and work with these attributes.
+
+## TODO
+
+- Set xattrs
+- Modify xattrs
+- Remove xattrs
+
+## NOTE
+
+I don't think this will work on Windows.
+
+## What's Inside The Tin
+
+The following functions are implemented:
+
+- `get_xattr`:	Retrieve the contents of the named xattr
+- `get_xattr_df`:	Retrieve a data frame of xattr names, sizes and (raw) contents for a target path
+- `get_xattr_raw`:	Retrieve the (raw) contents of the named xattr
+- `get_xattr_size`:	Retrieve the size (bytes) of the named xattr
+- `has_xattrs`:	Test if a target path has a particular xattr
+- `is_bplist`:	Tests whether a raw vector is really a binary plist
+- `list_xattrs`:	List extended attribute names of a target path
+- `read_bplist`:	Convert binary plist to something usable in R
+
+## Installation
+
+```{r eval=FALSE}
+devtools::install_github("hrbrmstr/xattrs")
+```
+
+```{r message=FALSE, warning=FALSE, error=FALSE, include=FALSE}
+options(width=120)
+```
+
+## Usage
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(xattrs)
+library(tidyverse)
+
+# current verison
+packageVersion("xattrs")
+
+```
+
+### Basic Operation
+
+Extended attributes seem to get stripped when R builds pkgs so until I can figure out an easy way not to do that, just find any file on your system that has an `@` next to the permissions string in an `ls -l` directory listing.
+
+```{r}
+sample_file <- "~/Downloads/Elementary-Lunch-Menu.pdf"
+
+list_xattrs(sample_file)
+
+get_xattr_size(sample_file, "com.apple.metadata:kMDItemWhereFroms")
+```
+
+Extended attributes can be _anything_ so it makes alot of sense to work with the contents as a raw vector:
+
+```{r}
+get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms")
+```
+
+There is a "string" version of the function, but it may return "nothing" if there are embedded NULLs or other breaking characters in the contents:
+
+```{r}
+get_xattr(sample_file, "com.apple.metadata:kMDItemWhereFroms")
+```
+
+You are really better off doing this if you really want a raw string conversion:
+
+```{r}
+readBin(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"), "character")
+```
+
+More often than not (on macOS) extended attributes are "binary property lists" (or "binary plist" for short). You can test to see if the returned raw vector is likely a binary plist:
+
+```{r}
+is_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
+```
+
+If it is, you can get the data out of it. For now, this makes a system call to `plutil` on macOS and `plistutil` on other systems. You'll be given a hint on how to install `plistutil` if it's not found.
+
+```{r}
+read_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
+```
+
+This is R, so you should really consider doing this instead of any of the above #rectanglesrule:
+
+```{r}
+get_xattr_df(sample_file)
+```
+
+you can live dangerously even with data frames, tho:
+
+```{r}
+get_xattr_df(sample_file) %>% 
+  mutate(txt = map_chr(contents, readBin, "character")) # potentially "dangerous"
+```
+
+### Extended Example
+
+We can process a whole directory of files to see what extended attributes various path targets have:
+
+```{r}
+fils <- list.files("~/Downloads", full.names = TRUE) 
+
+xdf <- map_df(set_names(fils, fils), get_xattr_df, .id="path")
+
+count(xdf, name, sort=TRUE) 
+```
+
+And we can work with `com.apple.metadata:kMDItemWhereFroms` binary plist data in bulk:
+
+```{r}
+filter(xdf, name == "com.apple.metadata:kMDItemWhereFroms") %>%
+  filter(map_lgl(contents, is_bplist)) %>% 
+  mutate(converted = map(contents, read_bplist)) %>% 
+  select(size, converted) %>% 
+  mutate(converted = map(converted, ~flatten_chr(.x$plist$array$string))) %>% 
+  unnest() %>% 
+  mutate(converted = urltools::domain(converted)) # you don't rly need to see the full URLs for this example
+```

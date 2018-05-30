@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{has_xattrs}
 \alias{has_xattrs}
-\title{Test if a target path has a particular xattr}
+\title{Test if a target path has xattrs}
 \usage{
 has_xattrs(path, follow_symlinks = TRUE)
 }
@@ -12,5 +12,5 @@ has_xattrs(path, follow_symlinks = TRUE)
 \item{follow_symlinks}{if \code{FALSE} get xattr of the symlink vs the target it references}
 }
 \description{
-Test if a target path has a particular xattr
+Test if a target path has xattrs
 }

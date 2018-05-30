@@ -2,9 +2,12 @@
 % Please edit documentation in R/df.R
 \name{get_xattr_df}
 \alias{get_xattr_df}
+\alias{read_xattrs}
 \title{Retrieve a data frame of xattr names, sizes and (raw) contents for a target path}
 \usage{
 get_xattr_df(path, follow_symlinks = TRUE)
+
+read_xattrs(path, follow_symlinks = TRUE)
 }
 \arguments{
 \item{path}{path target path (file or dir); this is auto-expanded}

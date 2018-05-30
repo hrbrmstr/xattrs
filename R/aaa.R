@@ -18,26 +18,6 @@ safely <- function(.f, otherwise = NULL, quiet = TRUE) {
   function(...) capture_error(.f(...), otherwise, quiet)
 }
 
-quietly <- function(.f) {
-  function(...) capture_output(.f(...))
-}
-
-possibly <- function(.f, otherwise, quiet = TRUE) {
-  force(otherwise)
-  function(...) {
-    tryCatch(.f(...),
-      error = function(e) {
-        if (!quiet)
-          message("Error: ", e$message)
-        otherwise
-      },
-      interrupt = function(e) {
-        stop("Terminated by user", call. = FALSE)
-      }
-    )
-  }
-}
-
 capture_error <- function(code, otherwise = NULL, quiet = TRUE) {
   tryCatch(
     list(result = code, error = NULL),
@@ -50,42 +30,6 @@ capture_error <- function(code, otherwise = NULL, quiet = TRUE) {
     interrupt = function(e) {
       stop("Terminated by user", call. = FALSE)
     }
-  )
-}
-
-capture_output <- function(code) {
-  warnings <- character()
-  wHandler <- function(w) {
-    warnings <<- c(warnings, w$message)
-    invokeRestart("muffleWarning")
-  }
-
-  messages <- character()
-  mHandler <- function(m) {
-    messages <<- c(messages, m$message)
-    invokeRestart("muffleMessage")
-  }
-
-  temp <- file()
-  sink(temp)
-  on.exit({
-    sink()
-    close(temp)
-  })
-
-  result <- withCallingHandlers(
-    code,
-    warning = wHandler,
-    message = mHandler
-  )
-
-  output <- paste0(readLines(temp, warn = FALSE), collapse = "\n")
-
-  list(
-    result = result,
-    output = output,
-    warnings = warnings,
-    messages = messages
   )
 }
 

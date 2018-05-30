@@ -4,6 +4,7 @@
 #' @param path path target path (file or dir); this is auto-expanded
 #' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
 #' @export
+#' @example inst/examples/ex1.R
 get_xattr_df <- function(path, follow_symlinks = TRUE) {
 
   xattr_list <- rcpp_get_xattr_df(path, follow_symlinks)

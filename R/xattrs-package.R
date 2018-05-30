@@ -12,4 +12,5 @@
 #' @importFrom xml2 read_xml as_list
 #' @importFrom sys exec_internal
 #' @importFrom Rcpp sourceCpp
+#' @example inst/examples/ex1.R
 NULL

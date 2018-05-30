@@ -10,6 +10,46 @@ Filesystem path target extended attributes store extra, customizable, small bits
 info. For example, author name, file character encoding, short comments, security
 status, etc. Methods are provided to list, extract and work with these attributes.
 }
+\examples{
+# Create a temp file for the example
+tf <- tempfile(fileext = ".csv")
+write.csv(mtcars, tf)
+
+# has attributes? (shld be FALSE)
+has_xattrs(tf)
+get_xattr(tf, "is.rud.setting")
+
+# set an attribute
+set_xattr(tf, "is.rud.setting.a", "first attribut")
+get_xattr(tf, "is.rud.setting.a")
+get_xattr_size(tf, "is.rud.setting.a")
+
+# shld be TRUE
+has_xattrs(tf)
+
+set_xattr(tf, "is.rud.setting.b", "second attribute")
+get_xattr(tf, "is.rud.setting.b")
+get_xattr_size(tf, "is.rud.setting.b")
+
+# overwrite an attribute
+set_xattr(tf, "is.rud.setting.a", "first attribute")
+get_xattr(tf, "is.rud.setting.a")
+get_xattr_size(tf, "is.rud.setting.a")
+
+# see all the attributes
+list_xattrs(tf)
+
+# data frame vs individual functions
+get_xattr_df(tf)
+
+# remove attribute
+rm_xattr(tf, "is.rud.setting")
+get_xattr(tf, "is.rud.setting")
+
+# cleanup
+unlink(tf)
+
+}
 \author{
 Bob Rudis (bob@rud.is)
 }

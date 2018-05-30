@@ -29,7 +29,7 @@ The following functions are implemented:
     (raw) contents for a target path
   - `get_xattr_raw`: Retrieve the (raw) contents of the named xattr
   - `get_xattr_size`: Retrieve the size (bytes) of the named xattr
-  - `has_xattrs`: Test if a target path has a particular xattr
+  - `has_xattrs`: Test if a target path has xattrs
   - `is_bplist`: Tests whether a raw vector is really a binary plist
   - `list_xattrs`: List extended attribute names of a target path
   - `read_bplist`: Convert binary plist to something usable in R

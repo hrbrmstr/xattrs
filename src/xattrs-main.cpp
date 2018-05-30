@@ -29,7 +29,7 @@ inline RawVector getxattr_raw(const std::string path, const std::string &name, i
 
 }
 
-//' Test if a target path has a particular xattr
+//' Test if a target path has xattrs
 //'
 //' @md
 //' @param path target path (file or dir); this is auto-expanded

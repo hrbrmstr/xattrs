@@ -2,6 +2,11 @@
 #include <algorithm>
 #include <sys/stat.h>
 
+#if defined(__linux__)
+#include <sys/types.h>
+#include <sys/xattr.h>
+#endif
+
 #include "extattr.h"
 
 using namespace Rcpp;
@@ -18,6 +23,10 @@ inline RawVector getxattr_raw(const std::string path, const std::string &name, i
 #if defined(__APPLE__) && defined(__MACH__)
   getxattr(path.c_str(), name.c_str(), buf, size, 0, options);
 #endif
+#if defined(__linux__)
+  /* ssize_t getxattr(const char *path, const char *name, void *value, size_t size);*/
+  getxattr(path.c_str(), name.c_str(), buf, size);
+#endif
 #if defined(__FreeBSD__)
   extattr_get_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), buf, size);
 #endif
@@ -32,6 +41,10 @@ inline int setxattr_raw(const std::string path, const std::string &name, RawVect
 #if defined(__APPLE__) && defined(__MACH__)
 	return setxattr(path.c_str(), name.c_str(), value.begin(), value.size(), 0, options);
 #endif
+#if defined(__linux__)
+	/*  int setxattr(const char *path, const char *name, const void *value, size_t size, int flags);*/
+	return setxattr(path.c_str(), name.c_str(), value.begin(), value.size(), 0);
+#endif
 #if defined(__FreeBSD__)
 	return extattr_set_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), value.begin(), value.size());
 #endif
@@ -40,7 +53,9 @@ inline int setxattr_raw(const std::string path, const std::string &name, RawVect
 // [[Rcpp::export]]
 int rcpp_set_xattr(std::string path, std::string name, RawVector value, bool follow_symlinks=true) {
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
   return(setxattr_raw(path, name, value, options));
 }
 
@@ -48,7 +63,9 @@ int rcpp_set_xattr(std::string path, std::string name, RawVector value, bool fol
 // [[Rcpp::export]]
 int rcpp_rm_xattr(std::string path, std::string name, bool follow_symlinks=true) {
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
   return(removexattr(path, name, options));
 }
 
@@ -63,7 +80,9 @@ int rcpp_rm_xattr(std::string path, std::string name, bool follow_symlinks=true)
 bool has_xattrs(const std::string path, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
   return(listxattrsize(full_path, options) > 0);
 }
 
@@ -78,7 +97,9 @@ bool has_xattrs(const std::string path, bool follow_symlinks=true) {
 CharacterVector list_xattrs(const std::string path, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
   if (has_xattrs(full_path, follow_symlinks)) {
     return(Rcpp::wrap(listxattr(full_path, options)));
   }
@@ -98,7 +119,9 @@ CharacterVector list_xattrs(const std::string path, bool follow_symlinks=true) {
 CharacterVector get_xattr(const std::string path, std::string name, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
   if (has_xattrs(full_path, follow_symlinks)) {
     std::string out = getxattr(full_path, name, options);
     if (out.length()>0) return(Rcpp::wrap(out));
@@ -118,7 +141,9 @@ CharacterVector get_xattr(const std::string path, std::string name, bool follow_
 RawVector get_xattr_raw(const std::string path, std::string name, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
   if (has_xattrs(full_path, follow_symlinks)) {
     RawVector out = getxattr_raw(full_path, name, options);
     if (out.length() > 0) return(out);
@@ -138,7 +163,9 @@ RawVector get_xattr_raw(const std::string path, std::string name, bool follow_sy
 ssize_t get_xattr_size(const std::string path, std::string name, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
   if (has_xattrs(full_path, follow_symlinks)) {
     ssize_t sz = getxattrsize(full_path, name, options);
     if (sz > 0) return(sz);
@@ -152,7 +179,9 @@ List rcpp_get_xattr_df(const std::string path, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
 
   int options = 0;
+#if defined(__APPLE__) && defined(__MACH__)
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+#endif
 
   std::vector<std::string> xnames = listxattr(full_path, options);
   std::vector<ssize_t> sz(xnames.size());

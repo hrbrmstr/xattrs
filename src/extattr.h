@@ -12,6 +12,11 @@
 #include <sys/xattr.h>
 #endif
 
+#if defined(__linux__)
+#include <sys/types.h>
+#include <sys/xattr.h>
+#endif
+
 #if defined(__FreeBSD__)
 #include <sys/extattr.h>
 #endif
@@ -28,6 +33,10 @@ inline int setxattr(int fd, const std::string &name, const std::string &value, i
 #if defined(__APPLE__) && defined(__MACH__)
 	return fsetxattr(fd, name.c_str(), value.data(), value.length(), 0, options);
 #endif
+#if defined(__linux__)
+  /* int fsetxattr(int fd, const char *name, const void *value,    size_t size, int flags); */
+	return fsetxattr(    fd,     name.c_str(),      value.data(), value.length(),         0);
+#endif
 #if defined(__FreeBSD__)
 	return extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, name.c_str(), value.data(), value.length());
 #endif
@@ -38,6 +47,9 @@ inline int setxattr(const std::string path, const std::string &name, const std::
 #if defined(__APPLE__) && defined(__MACH__)
 	return setxattr(path.c_str(), name.c_str(), value.data(), value.length(), 0, options);
 #endif
+#if defined(__linux__)
+	return setxattr(path.c_str(), name.c_str(), value.data(), value.length(), 0);
+#endif
 #if defined(__FreeBSD__)
 	return extattr_set_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), value.data(), value.length());
 #endif
@@ -47,6 +59,10 @@ inline ssize_t getxattrsize(const std::string path, const std::string &name, int
 {
 #if defined(__APPLE__) && defined(__MACH__)
 	return getxattr(path.c_str(), name.c_str(), NULL, 0, 0, options);
+#endif
+#if defined(__linux__)
+  /* getxattr(const char *path, const char *name, void *value, size_t size); */
+	return getxattr(path.c_str(), name.c_str(), NULL, 0);
 #endif
 #if defined(__FreeBSD__)
 	return extattr_get_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), NULL, 0);
@@ -66,6 +82,10 @@ inline std::string getxattr(const std::string path, const std::string &name, int
 #if defined(__APPLE__) && defined(__MACH__)
 	getxattr(path.c_str(), name.c_str(), buf, size, 0, options);
 #endif
+#if defined(__linux__)
+	/* getxattr(const char *path, const char *name, void *value, size_t size); */
+	getxattr(path.c_str(), name.c_str(), buf, size);
+#endif
 #if defined(__FreeBSD__)
 	extattr_get_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), buf, size);
 #endif
@@ -81,6 +101,10 @@ inline ssize_t listxattrsize(const std::string path, int options=0)
 #if defined(__APPLE__) && defined(__MACH__)
 	return listxattr(path.c_str(), NULL, 0, options);
 #endif
+#if defined(__linux__)
+  /* ssize_t listxattr(const char *path, char *list, size_t size); */
+	return listxattr(path.c_str(), NULL, 0);
+#endif
 #if defined(__FreeBSD__)
 	return extattr_list_file(path.c_str(), EXTATTR_NAMESPACE_USER, NULL, 0);
 #endif
@@ -93,6 +117,10 @@ inline size_t _listxattr(const std::string path, char *buf, const size_t size, i
 {
 #if defined(__APPLE__) && defined(__MACH__)
 	return listxattr(path.c_str(), buf, size, options);
+#endif
+#if defined(__linux__)
+  /* ssize_t listxattr(const char *path, char *list, size_t size); */
+	return listxattr(path.c_str(), buf, size);
 #endif
 #if defined(__FreeBSD__)
 	return extattr_list_file(path.c_str(), EXTATTR_NAMESPACE_USER, buf, size);
@@ -232,6 +260,74 @@ inline attr_names_t listxattr(const std::string path, const std::string &prefix,
 
 #endif
 
+#if defined(__linux__)
+//Return a list of attributes in a container, one attribute per element
+inline attr_names_t listxattr(const std::string path, int options=0)
+{
+	ssize_t size = listxattrsize(path, options);
+	char *buf;
+	ssize_t i=0;
+	attr_names_t v;
+
+	if( size <= 0 )
+		return v;
+
+	buf = new char[size];
+
+	_listxattr(path, buf, size, options);
+
+	while(i<size)
+	{
+		v.push_back(std::string(&(buf[i])));
+		i += (v.back()).length() + 1;
+	}
+	return v;
+}
+
+//Return a list of attributes in a container, one attribute per element
+//	Only return the elements that begin with prefix
+inline attr_names_t listxattr(const std::string path, const std::string &prefix, int options=0)
+{
+	ssize_t size = listxattrsize(path, options);
+	char *buf;
+//	char *p;
+	ssize_t i=0;
+	int s;
+	attr_names_t v;
+	int j=0;
+
+	if( size <= 0 )
+		return v;
+
+	buf = new char[size];
+
+	_listxattr(path, buf, size, options);
+
+//	p = buf;
+	while(i<size)
+	{
+/*		s = strlen(p);
+		if( strncmp(p, prefix.data(), MIN(s, prefix.length())) == 0)
+		{
+			v.push_back(std::string(p, s));
+		++j;
+		}
+		p += s + 1;
+		i += s + 1;
+*/
+		s = strlen(&(buf[i]));
+		if( strncmp(&(buf[i]), prefix.data(), MIN(s, prefix.length())) == 0)
+		{
+			v.push_back(std::string(&(buf[i])));
+		++j;
+		}
+		i += s + 1;
+	}
+	return v;
+}
+
+#endif
+
 /*
 //Return a list of attributes in a container, one attribute per element
 //	Only return the elements that begin with prefix
@@ -256,6 +352,9 @@ inline attr_names_t listxattr(const std::string path, const std::string &prefix,
 inline int removexattr(const std::string path, const std::string name, int options=0)
 {
 #if defined(__APPLE__) && defined(__MACH__)
+	return removexattr(path.c_str(), name.c_str(), options);
+#endif
+#if defined(__linux__)
 	return removexattr(path.c_str(), name.c_str(), options);
 #endif
 #if defined(__FreeBSD__)

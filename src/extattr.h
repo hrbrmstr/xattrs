@@ -13,9 +13,12 @@
 #endif
 
 #if defined(__linux__)
+/*
 #include <sys/types.h>
-#include <sys/xattr.h>
+*/
+#include <attr/xattr.h>
 #endif
+
 
 #if defined(__FreeBSD__)
 #include <sys/extattr.h>
@@ -28,19 +31,20 @@ typedef	std::pair<std::string, std::string>	ext_attr_t;
 typedef	std::vector<std::string>	attr_names_t;
 typedef	std::vector<ext_attr_t>	ext_attrs_t;
 
+/*
 inline int setxattr(int fd, const std::string &name, const std::string &value, int options=0)
 {
 #if defined(__APPLE__) && defined(__MACH__)
 	return fsetxattr(fd, name.c_str(), value.data(), value.length(), 0, options);
 #endif
 #if defined(__linux__)
-  /* int fsetxattr(int fd, const char *name, const void *value,    size_t size, int flags); */
-	return fsetxattr(    fd,     name.c_str(),      value.data(), value.length(),         0);
+	return fsetxattr(fd, name.c_str(), value.data(), value.length(), 0);
 #endif
 #if defined(__FreeBSD__)
 	return extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, name.c_str(), value.data(), value.length());
 #endif
 }
+*/
 
 inline int setxattr(const std::string path, const std::string &name, const std::string &value, int options=0)
 {

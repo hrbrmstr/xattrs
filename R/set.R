@@ -14,6 +14,8 @@ set_xattr <- function(path, name, value, follow_symlinks=TRUE) {
   path <- path.expand(path)
   if (!file.exists(path)) stop("File not found.", call.=FALSE)
 
+  name <- handle_user_prefix_param(name)
+
   if (is.character(value)) value <- charToRaw(value)
 
   ret <- rcpp_set_xattr(path, name, value, follow_symlinks)

@@ -11,6 +11,8 @@ rm_xattr <- function(path, name, follow_symlinks=TRUE) {
   path <- path.expand(path)
   if (!file.exists(path)) stop("File not found.", call.=FALSE)
 
+  name <- handle_user_prefix_param(name)
+
   ret <- rcpp_rm_xattr(path, name, follow_symlinks)
 
   if (ret > 0) warning(sprintf("Error %s while removing attribute.", ret))

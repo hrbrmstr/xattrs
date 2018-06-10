@@ -11,6 +11,24 @@
 
 using namespace Rcpp;
 
+
+//' Test if a target path has xattrs
+//'
+//' @md
+//' @param path target path (file or dir); this is auto-expanded
+//' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
+//' @export
+//' @example inst/examples/ex1.R
+// [[Rcpp::export]]
+bool has_xattrs(const std::string path, bool follow_symlinks=true) {
+  std::string full_path = std::string(R_ExpandFileName(path.c_str()));
+  int options = 0;
+  if (!follow_symlinks) options = XATTR_NOFOLLOW;
+  return(listxattrsize(full_path, options) > 0);
+}
+
+
+
 inline RawVector getxattr_raw(const std::string path, const std::string &name, int options=0) {
 
   ssize_t size = getxattrsize(path, name, options);

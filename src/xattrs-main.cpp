@@ -2,9 +2,32 @@
 #include <algorithm>
 #include <sys/stat.h>
 
+#if defined(__linux__)
+#include <attr/xattr.h>
+#define XATTR_NOFOLLOW 0
+#endif
+
 #include "extattr.h"
 
 using namespace Rcpp;
+
+
+//' Test if a target path has xattrs
+//'
+//' @md
+//' @param path target path (file or dir); this is auto-expanded
+//' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
+//' @export
+//' @example inst/examples/ex1.R
+// [[Rcpp::export]]
+bool has_xattrs(const std::string path, bool follow_symlinks=true) {
+  std::string full_path = std::string(R_ExpandFileName(path.c_str()));
+  int options = 0;
+  if (!follow_symlinks) options = XATTR_NOFOLLOW;
+  return(listxattrsize(full_path, options) > 0);
+}
+
+
 
 inline RawVector getxattr_raw(const std::string path, const std::string &name, int options=0) {
 
@@ -18,6 +41,9 @@ inline RawVector getxattr_raw(const std::string path, const std::string &name, i
 #if defined(__APPLE__) && defined(__MACH__)
   getxattr(path.c_str(), name.c_str(), buf, size, 0, options);
 #endif
+#if defined(__linux__)
+  getxattr(path.c_str(), name.c_str(), buf, size);
+#endif
 #if defined(__FreeBSD__)
   extattr_get_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), buf, size);
 #endif
@@ -28,9 +54,13 @@ inline RawVector getxattr_raw(const std::string path, const std::string &name, i
 
 }
 
+
 inline int setxattr_raw(const std::string path, const std::string &name, RawVector value, int options=0) {
 #if defined(__APPLE__) && defined(__MACH__)
 	return setxattr(path.c_str(), name.c_str(), value.begin(), value.size(), 0, options);
+#endif
+#if defined(__linux__)
+	return setxattr(path.c_str(), name.c_str(), value.begin(), value.size(), options);
 #endif
 #if defined(__FreeBSD__)
 	return extattr_set_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), value.begin(), value.size());
@@ -49,33 +79,23 @@ int rcpp_set_xattr(std::string path, std::string name, RawVector value, bool fol
 int rcpp_rm_xattr(std::string path, std::string name, bool follow_symlinks=true) {
   int options = 0;
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
+  /*  return(removexattr(path, name, options)); */
+  
+#if defined(__APPLE__) && defined(__MACH__)
   return(removexattr(path, name, options));
-}
+#endif
+#if defined(__linux__)
+  return(removexattr(path.c_str(), name.c_str()));
+#endif
+#if defined(__FreeBSD__)
+  return(removexattr(path, name, options));
+#endif
+  
+  }
 
-//' Test if a target path has xattrs
-//'
-//' @md
-//' @param path target path (file or dir); this is auto-expanded
-//' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
-//' @export
-//' @example inst/examples/ex1.R
-// [[Rcpp::export]]
-bool has_xattrs(const std::string path, bool follow_symlinks=true) {
-  std::string full_path = std::string(R_ExpandFileName(path.c_str()));
-  int options = 0;
-  if (!follow_symlinks) options = XATTR_NOFOLLOW;
-  return(listxattrsize(full_path, options) > 0);
-}
 
-//' List extended attribute names of a target path
-//'
-//' @md
-//' @param path target path (file or dir); this is auto-expanded
-//' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
-//' @export
-//' @example inst/examples/ex1.R
 // [[Rcpp::export]]
-CharacterVector list_xattrs(const std::string path, bool follow_symlinks=true) {
+CharacterVector rcpp_list_xattrs(const std::string path, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
@@ -85,17 +105,9 @@ CharacterVector list_xattrs(const std::string path, bool follow_symlinks=true) {
   return(CharacterVector::create());
 }
 
-//' Retrieve the contents of the named xattr
-//'
-//' @md
-//' @note You should really use [get_xattr_raw()]
-//' @param path target path (file or dir); this is auto-expanded
-//' @param name xattr name to retrieve
-//' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
-//' @export
-//' @example inst/examples/ex1.R
+
 // [[Rcpp::export]]
-CharacterVector get_xattr(const std::string path, std::string name, bool follow_symlinks=true) {
+CharacterVector rcpp_get_xattr(const std::string path, std::string name, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
   if (!follow_symlinks) options = XATTR_NOFOLLOW;

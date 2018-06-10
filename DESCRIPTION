@@ -6,7 +6,8 @@ Date: 2018-05-30
 Authors@R: c(
     person("Bob", "Rudis", email = "bob@rud.is", role = c("aut", "cre"), 
            comment = c(ORCID = "0000-0001-5670-2640")),
-    person("Brandon", "Fosdick", comment="extattr.h C++ library", role="aut")
+    person("Brandon", "Fosdick", comment="extattr.h C++ library", role="aut"),
+    person("Ralf", "Herold", comment="linux copmatibility", role="ctb")
   )
 Maintainer: Bob Rudis <bob@rud.is>
 Description: Filesystem path target extended attributes store extra, customizable, 

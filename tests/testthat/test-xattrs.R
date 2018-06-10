@@ -4,42 +4,68 @@ test_that("we can do something", {
   tf <- tempfile(fileext = ".csv")
   write.csv(mtcars, tf)
 
+  # no attribute set so far
   expect_false(has_xattrs(tf))
   expect_identical(get_xattr(tf, "is.rud.setting"), character(0))
 
-  # temporarily set attribute using OS tool
-  system(paste0(ifelse(grepl("darwin", sessionInfo()$platform),
-                       "xattr -s a.test    Avalue ",
-                       "attr  -s a.test -V Avalue "), tf),
-         ignore.stdout = TRUE)
+  # setting attribute using respective OS tool and reading
+  #
+  if(grepl("darwin", utils::sessionInfo()$platform)) {
+    
+    system(paste0("xattr -s is.rud.setting 'another attribute' ", tf), ignore.stdout = TRUE)
+    expect_true(has_xattrs(tf))
+    expect_identical(list_xattrs(tf), "is.rud.setting")
+    expect_identical(get_xattr(tf, "is.rud.setting"), "another attribute")
+    
+    # TO BE implemented with handle_user_prefix_{param,return}
+    expect_equal(get_xattr_size(tf, "user.is.rud.setting"), 17L)
+    expect_identical(class(get_xattr_df(tf)), c("tbl_df", "tbl", "data.frame"))
 
+    # continue testing    
+    expect_true(rm_xattr(tf, "is.rud.setting"))
+  }
+  #
+  if(grepl("linux", utils::sessionInfo()$platform)) {
+    
+    system(paste0("attr -s is.rud.setting -V 'another attribute' ", tf), ignore.stdout = TRUE)
+    expect_true(has_xattrs(tf))
+    expect_identical(list_xattrs(tf), "is.rud.setting")
+    expect_identical(get_xattr(tf, "is.rud.setting"), "another attribute")
+
+    # TO BE implemented with handle_user_prefix_{param,return}
+    expect_equal(get_xattr_size(tf, "user.is.rud.setting"), 17L)
+    expect_identical(class(get_xattr_df(tf)), c("tbl_df", "tbl", "data.frame"))
+    
+    # continue testing    
+    expect_true(rm_xattr(tf, "is.rud.setting"))
+  }
+  
+  # setting and reading attribute with internal functions
+  expect_true(set_xattr(tf, "is.rud.setting.a", "first attribut"))
+  
+  # TO BE implemented with handle_user_prefix_{param,return}
+  expect_equal(get_xattr_size(tf, "user.is.rud.setting.a"), 14L)
+
+  # continue testing
   expect_true(has_xattrs(tf))
-  expect_identical(list_xattrs(tf), "user.a.test")
-  expect_identical(get_xattr(tf, "user.a.test"), "Avalue")
-  expect_equal(get_xattr_size(tf, "user.a.test"), 6L)
-  expect_identical(class(get_xattr_df(tf)), c("tbl_df", "tbl", "data.frame"))
+  expect_true(set_xattr(tf, "is.rud.setting.b", "second attribute"))
+  expect_equal(get_xattr(tf, "is.rud.setting.b"), "second attribute")
+  
+  # TO BE implemented with handle_user_prefix_{param,return}
+  expect_equal(get_xattr_size(tf, "user.is.rud.setting.b"), 16L)
 
-  # set_xattr(tf, "is.rud.setting.a", "first attribut")
-  #
-  # expect_equal(get_xattr(tf, "is.rud.setting.a"), "first attribut")
-  # expect_equal(get_xattr_size(tf, "is.rud.setting.a"), 14)
-  #
-  # expect_true(has_xattrs(tf))
-  #
-  # set_xattr(tf, "is.rud.setting.b", "second attribute")
-  # expect_equal(get_xattr(tf, "is.rud.setting.b"), "second attribute")
-  # expect_equal(get_xattr_size(tf, "is.rud.setting.b"), 16)
-  #
-  # set_xattr(tf, "is.rud.setting.a", "first attribute")
-  # expect_equal(get_xattr(tf, "is.rud.setting.a"), "first attribute")
-  # expect_equal(get_xattr_size(tf, "is.rud.setting.a"), 15)
-  #
-  # expect_equal(length(list_xattrs(tf)), 2)
-  #
-  # expect_equal(nrow(get_xattr_df(tf)), 2)
-  #
-  # rm_xattr(tf, "is.rud.setting")
-  # expect_equal(get_xattr(tf, "is.rud.setting"), character(0))
+  # continue testing
+  expect_true(set_xattr(tf, "is.rud.setting.a", "first attribute"))
+  expect_equal(get_xattr(tf, "is.rud.setting.a"), "first attribute")
+  
+  # TO BE implemented with handle_user_prefix_{param,return}
+  expect_equal(get_xattr_size(tf, "user.is.rud.setting.a"), 15L)
+
+  # continue testing
+  expect_equal(length(list_xattrs(tf)), 2)
+  expect_equal(nrow(get_xattr_df(tf)), 2)
+  expect_true(rm_xattr(tf, "is.rud.setting.a"))
+  expect_equal(get_xattr(tf, "is.rud.setting.a"), character(0))
 
   unlink(tf)
 

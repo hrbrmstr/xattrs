@@ -12,7 +12,7 @@ test_that("we can do something", {
   #
   if(grepl("darwin", utils::sessionInfo()$platform)) {
     
-    system(paste0("xattr -w is.rud.setting 'another attribute' ", tf), ignore.stdout = TRUE)
+    system(paste0("xattr -w 'is.rud.setting' 'another attribute' ", tf), ignore.stdout = TRUE)
     expect_true(has_xattrs(tf))
     expect_identical(list_xattrs(tf), "is.rud.setting")
     expect_identical(get_xattr(tf, "is.rud.setting"), "another attribute")

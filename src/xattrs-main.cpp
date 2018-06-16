@@ -4,7 +4,7 @@
 
 #if defined(__linux__)
 #include <attr/xattr.h>
-#define XATTR_NOFOLLOW 0
+#define XATTR_NOFOLLOW 1
 #endif
 
 #include "extattr.h"
@@ -169,6 +169,5 @@ List rcpp_get_xattr_df(const std::string path, bool follow_symlinks=true) {
   return(xdf);
 
 }
-
 
 

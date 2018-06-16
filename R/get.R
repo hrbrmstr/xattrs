@@ -18,3 +18,42 @@ get_xattr <- function(path, name, follow_symlinks=TRUE) {
   ret
 
 }
+
+#' Get raw contents of an extended attribute
+#'
+#' @md
+#' @inheritParams get_xattr
+#' @export
+#' @example inst/examples/ex1.R
+get_xattr_raw <- function(path, name, follow_symlinks=TRUE) {
+
+  path <- path.expand(path)
+  if (!file.exists(path)) stop("File not found.", call.=FALSE)
+
+  name <- handle_user_prefix_param(name)
+
+  ret <- rcpp_get_xattr_raw(path, name, follow_symlinks)
+
+  ret
+
+}
+
+#' Get size of an extended attribute
+#'
+#' @md
+#' @inheritParams get_xattr
+#' @export
+#' @example inst/examples/ex1.R
+get_xattr_size <- function(path, name, follow_symlinks=TRUE) {
+
+  path <- path.expand(path)
+  if (!file.exists(path)) stop("File not found.", call.=FALSE)
+
+  name <- handle_user_prefix_param(name)
+
+  ret <- rcpp_get_xattr_size(path, name, follow_symlinks)
+
+  ret
+
+}
+

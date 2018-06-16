@@ -28,28 +28,12 @@ rcpp_get_xattr <- function(path, name, follow_symlinks = TRUE) {
     .Call('_xattrs_rcpp_get_xattr', PACKAGE = 'xattrs', path, name, follow_symlinks)
 }
 
-#' Retrieve the (raw) contents of the named xattr
-#'
-#' @md
-#' @param path target path (file or dir); this is auto-expanded
-#' @param name xattr name to retrieve
-#' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
-#' @export
-#' @example inst/examples/ex1.R
-get_xattr_raw <- function(path, name, follow_symlinks = TRUE) {
-    .Call('_xattrs_get_xattr_raw', PACKAGE = 'xattrs', path, name, follow_symlinks)
+rcpp_get_xattr_raw <- function(path, name, follow_symlinks = TRUE) {
+    .Call('_xattrs_rcpp_get_xattr_raw', PACKAGE = 'xattrs', path, name, follow_symlinks)
 }
 
-#' Retrieve the size (bytes) of the named xattr
-#'
-#' @md
-#' @param path target path (file or dir); this is auto-expanded
-#' @param name xattr name to retrieve
-#' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
-#' @export
-#' @example inst/examples/ex1.R
-get_xattr_size <- function(path, name, follow_symlinks = TRUE) {
-    .Call('_xattrs_get_xattr_size', PACKAGE = 'xattrs', path, name, follow_symlinks)
+rcpp_get_xattr_size <- function(path, name, follow_symlinks = TRUE) {
+    .Call('_xattrs_rcpp_get_xattr_size', PACKAGE = 'xattrs', path, name, follow_symlinks)
 }
 
 rcpp_get_xattr_df <- function(path, follow_symlinks = TRUE) {

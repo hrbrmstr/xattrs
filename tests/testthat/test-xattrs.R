@@ -11,8 +11,8 @@ test_that("we can do something", {
   # setting attribute using respective OS tool and reading
   #
   if(grepl("darwin", utils::sessionInfo()$platform)) {
-    
-    system(paste0("xattr -w 'is.rud.setting' 'another attribute' ", tf), ignore.stdout = TRUE)
+
+    sys::exec_internal("xattr", arg = c("-w", ",is.rud.setting", "another attribute", tf), error = FALSE)
     expect_true(has_xattrs(tf))
     expect_identical(list_xattrs(tf), "is.rud.setting")
     expect_identical(get_xattr(tf, "is.rud.setting"), "another attribute")
@@ -26,8 +26,8 @@ test_that("we can do something", {
   }
   #
   if(grepl("linux", utils::sessionInfo()$platform)) {
-    
-    system(paste0("attr -s is.rud.setting -V 'another attribute' ", tf), ignore.stdout = TRUE)
+
+    sys::exec_internal("attr", arg = c("-s", "is.rud.setting", "-V", "another attribute", tf), error = FALSE)
     expect_true(has_xattrs(tf))
     expect_identical(list_xattrs(tf), "is.rud.setting")
     expect_identical(get_xattr(tf, "is.rud.setting"), "another attribute")

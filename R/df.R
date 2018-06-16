@@ -11,6 +11,7 @@ get_xattr_df <- function(path, follow_symlinks = TRUE) {
   class(xattr_list$contents) <- c("AsIs", "list")
   xdf <- as.data.frame(xattr_list, stringsAsFactors=FALSE)
   attributes(xdf$contents) <- NULL
+  xdf$name <- handle_user_prefix_return(xdf$name)
   class(xdf) <- c("tbl_df", "tbl", "data.frame")
   xdf
 

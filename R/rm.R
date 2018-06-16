@@ -15,7 +15,7 @@ rm_xattr <- function(path, name, follow_symlinks=TRUE) {
 
   ret <- rcpp_rm_xattr(path, name, follow_symlinks)
 
-  if (ret != 0L) warning(sprintf("Error %s while removing attribute.", ret))
+  if (ret != 0L) warning(sprintf("Error %s while removing attribute.", ret), call. = FALSE, immediate. = TRUE)
 
   return(invisible(ret == 0L))
 

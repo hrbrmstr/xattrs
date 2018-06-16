@@ -10,7 +10,7 @@ test_that("we can do something", {
 
   # setting attribute using respective OS tool
   if(grepl("darwin", utils::sessionInfo()$platform)) {
-    sys::exec_internal("xattr", arg = c("-w", ",is.rud.setting", "another attribute", tf), error = FALSE)
+    sys::exec_internal("xattr", arg = c("-w", "is.rud.setting", "another attribute", tf), error = FALSE)
   }
   if(grepl("linux", utils::sessionInfo()$platform)) {
     sys::exec_internal("attr", arg = c("-s", "is.rud.setting", "-V", "another attribute", tf), error = FALSE)
@@ -33,11 +33,11 @@ test_that("we can do something", {
   #
   expect_true(set_xattr(tf, "is.rud.setting.b", "second attribute"))
   expect_equal(get_xattr(tf, "is.rud.setting.b"), "second attribute")
-  expect_equal(get_xattr_size(tf, "user.is.rud.setting.b"), 16L)
+  expect_equal(get_xattr_size(tf, "is.rud.setting.b"), 16L)
   #
   expect_true(set_xattr(tf, "is.rud.setting.a", "first attribute"))
   expect_equal(get_xattr(tf, "is.rud.setting.a"), "first attribute")
-  expect_equal(get_xattr_size(tf, "user.is.rud.setting.a"), 15L)
+  expect_equal(get_xattr_size(tf, "is.rud.setting.a"), 15L)
   #
   expect_equal(length(list_xattrs(tf)), 2)
   expect_equal(nrow(get_xattr_df(tf)), 2)

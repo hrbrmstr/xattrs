@@ -80,7 +80,7 @@ int rcpp_rm_xattr(std::string path, std::string name, bool follow_symlinks=true)
   int options = 0;
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
   /*  return(removexattr(path, name, options)); */
-  
+
 #if defined(__APPLE__) && defined(__MACH__)
   return(removexattr(path, name, options));
 #endif
@@ -90,7 +90,7 @@ int rcpp_rm_xattr(std::string path, std::string name, bool follow_symlinks=true)
 #if defined(__FreeBSD__)
   return(removexattr(path, name, options));
 #endif
-  
+
   }
 
 
@@ -118,16 +118,8 @@ CharacterVector rcpp_get_xattr(const std::string path, std::string name, bool fo
    return(CharacterVector::create());
 }
 
-//' Retrieve the (raw) contents of the named xattr
-//'
-//' @md
-//' @param path target path (file or dir); this is auto-expanded
-//' @param name xattr name to retrieve
-//' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
-//' @export
-//' @example inst/examples/ex1.R
 // [[Rcpp::export]]
-RawVector get_xattr_raw(const std::string path, std::string name, bool follow_symlinks=true) {
+RawVector rcpp_get_xattr_raw(const std::string path, std::string name, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
@@ -138,16 +130,9 @@ RawVector get_xattr_raw(const std::string path, std::string name, bool follow_sy
   return(RawVector::create());
 }
 
-//' Retrieve the size (bytes) of the named xattr
-//'
-//' @md
-//' @param path target path (file or dir); this is auto-expanded
-//' @param name xattr name to retrieve
-//' @param follow_symlinks if `FALSE` get xattr of the symlink vs the target it references
-//' @export
-//' @example inst/examples/ex1.R
+
 // [[Rcpp::export]]
-ssize_t get_xattr_size(const std::string path, std::string name, bool follow_symlinks=true) {
+ssize_t rcpp_get_xattr_size(const std::string path, std::string name, bool follow_symlinks=true) {
   std::string full_path = std::string(R_ExpandFileName(path.c_str()));
   int options = 0;
   if (!follow_symlinks) options = XATTR_NOFOLLOW;

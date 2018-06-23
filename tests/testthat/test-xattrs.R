@@ -19,8 +19,10 @@ test_that("we can do something", {
   if(grepl("linux", utils::sessionInfo()$platform)) {
     sys::exec_internal("attr", arg = c("-s", "is.rud.setting", "-V", "another attribute", tf), error = FALSE)
   }
+
   # reading and deleting with internal functions
   if(grepl("darwin|linux", utils::sessionInfo()$platform)) {
+
     # check attributes set with OS tool
     expect_true(has_xattrs(tf))
     expect_identical(list_xattrs(tf), "is.rud.setting")
@@ -40,6 +42,9 @@ test_that("we can do something", {
     # now check symbolic link
     expect_true(has_xattrs(tl, follow_symlinks = TRUE))
     expect_false(has_xattrs(tl, follow_symlinks = FALSE))
+
+    # remove
+    expect_true(rm_xattr(tf, "is.rud.setting"))
 
   }
 

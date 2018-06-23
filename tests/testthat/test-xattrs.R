@@ -1,8 +1,12 @@
 context("Get / set / check / read / list / size xattrs ops work")
 test_that("we can do something", {
 
+  # a target for a temporary file for testing
   tf <- tempfile(fileext = ".csv")
   write.csv(mtcars, tf)
+
+  # a target for a link to the temporary file
+  tl <- tempfile()
 
   # no attribute set so far
   expect_false(has_xattrs(tf))
@@ -24,6 +28,19 @@ test_that("we can do something", {
     expect_equal(get_xattr_size(tf, "is.rud.setting"), 17L)
     expect_identical(class(get_xattr_df(tf)), c("tbl_df", "tbl", "data.frame"))
     expect_true(rm_xattr(tf, "is.rud.setting"))
+
+    # links vs real targets
+    sys::exec_internal("ln", arg = c("-s", tf, tl))
+
+    # set and check attribute on tf
+    expect_true(set_xattr(tf, "is.rud.setting", "attribute value"))
+    expect_true(has_xattrs(tf))
+    expect_true(has_xattrs(tf, follow_symlinks = TRUE))
+
+    # now check symbolic link
+    expect_true(has_xattrs(tl, follow_symlinks = TRUE))
+    expect_false(has_xattrs(tl, follow_symlinks = FALSE))
+
   }
 
   # setting, reading, deleting attributes with internal functions
@@ -46,5 +63,6 @@ test_that("we can do something", {
   expect_equal(get_xattr(tf, "is.rud.setting.a"), character(0))
 
   unlink(tf)
+  unlink(tl)
 
 })

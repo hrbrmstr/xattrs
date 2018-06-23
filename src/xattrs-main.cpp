@@ -4,7 +4,7 @@
 
 #if defined(__linux__)
 #include <attr/xattr.h>
-#define XATTR_NOFOLLOW 1
+#define XATTR_NOFOLLOW 0x0001 /* Don't follow symbolic links */
 #endif
 
 #include "extattr.h"
@@ -25,7 +25,7 @@ bool has_xattrs(const std::string path, bool follow_symlinks=true) {
   int options = 0;
   if (!follow_symlinks) options = XATTR_NOFOLLOW;
   return(listxattrsize(full_path, options) > 0);
-}
+ }
 
 
 

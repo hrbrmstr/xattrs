@@ -106,8 +106,11 @@ inline ssize_t listxattrsize(const std::string path, int options=0)
 	return listxattr(path.c_str(), NULL, 0, options);
 #endif
 #if defined(__linux__)
-  /* ssize_t listxattr(const char *path, char *list, size_t size); */
-	return listxattr(path.c_str(), NULL, 0);
+  if (options == 0){
+    return listxattr(path.c_str(), NULL, 0);
+  } else{
+    return llistxattr(path.c_str(), NULL, 0);
+  }
 #endif
 #if defined(__FreeBSD__)
 	return extattr_list_file(path.c_str(), EXTATTR_NAMESPACE_USER, NULL, 0);

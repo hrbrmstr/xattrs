@@ -46,18 +46,26 @@ inline int setxattr(int fd, const std::string &name, const std::string &value, i
 }
 */
 
+
 inline int setxattr(const std::string path, const std::string &name, const std::string &value, int options=0)
 {
 #if defined(__APPLE__) && defined(__MACH__)
 	return setxattr(path.c_str(), name.c_str(), value.data(), value.length(), 0, options);
 #endif
 #if defined(__linux__)
-	return setxattr(path.c_str(), name.c_str(), value.data(), value.length(), 0);
+  /* By default (i.e., options flags is zero), the extended attribute will be
+   * created if it does not exist, or the value will be replaced if the attribute exists.*/
+  if (options == 0){
+    return setxattr(path.c_str(), name.c_str(), value.data(), value.length(), 0);
+  } else {
+    return lsetxattr(path.c_str(), name.c_str(), value.data(), value.length(), 0);
+  }
 #endif
 #if defined(__FreeBSD__)
 	return extattr_set_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), value.data(), value.length());
 #endif
 }
+
 
 inline ssize_t getxattrsize(const std::string path, const std::string &name, int options=0)
 {
@@ -65,8 +73,11 @@ inline ssize_t getxattrsize(const std::string path, const std::string &name, int
 	return getxattr(path.c_str(), name.c_str(), NULL, 0, 0, options);
 #endif
 #if defined(__linux__)
-  /* getxattr(const char *path, const char *name, void *value, size_t size); */
-	return getxattr(path.c_str(), name.c_str(), NULL, 0);
+  if (options == 0){
+    return getxattr(path.c_str(), name.c_str(), NULL, 0);
+  } else{
+    return lgetxattr(path.c_str(), name.c_str(), NULL, 0);
+  }
 #endif
 #if defined(__FreeBSD__)
 	return extattr_get_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), NULL, 0);
@@ -87,8 +98,11 @@ inline std::string getxattr(const std::string path, const std::string &name, int
 	getxattr(path.c_str(), name.c_str(), buf, size, 0, options);
 #endif
 #if defined(__linux__)
-	/* getxattr(const char *path, const char *name, void *value, size_t size); */
-	getxattr(path.c_str(), name.c_str(), buf, size);
+	if (options == 0){
+	  getxattr(path.c_str(), name.c_str(), buf, size);
+	} else{
+	  lgetxattr(path.c_str(), name.c_str(), buf, size);
+	}
 #endif
 #if defined(__FreeBSD__)
 	extattr_get_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str(), buf, size);
@@ -106,8 +120,11 @@ inline ssize_t listxattrsize(const std::string path, int options=0)
 	return listxattr(path.c_str(), NULL, 0, options);
 #endif
 #if defined(__linux__)
-  /* ssize_t listxattr(const char *path, char *list, size_t size); */
-	return listxattr(path.c_str(), NULL, 0);
+  if (options == 0){
+    return listxattr(path.c_str(), NULL, 0);
+  } else{
+    return llistxattr(path.c_str(), NULL, 0);
+  }
 #endif
 #if defined(__FreeBSD__)
 	return extattr_list_file(path.c_str(), EXTATTR_NAMESPACE_USER, NULL, 0);
@@ -123,8 +140,11 @@ inline size_t _listxattr(const std::string path, char *buf, const size_t size, i
 	return listxattr(path.c_str(), buf, size, options);
 #endif
 #if defined(__linux__)
-  /* ssize_t listxattr(const char *path, char *list, size_t size); */
-	return listxattr(path.c_str(), buf, size);
+  if (options == 0){
+    return listxattr(path.c_str(), buf, size);
+  } else{
+    return llistxattr(path.c_str(), buf, size);
+  }
 #endif
 #if defined(__FreeBSD__)
 	return extattr_list_file(path.c_str(), EXTATTR_NAMESPACE_USER, buf, size);
@@ -359,7 +379,11 @@ inline int removexattr(const std::string path, const std::string name, int optio
 	return removexattr(path.c_str(), name.c_str(), options);
 #endif
 #if defined(__linux__)
-	return removexattr(path.c_str(), name.c_str(), options);
+  if (options == 0){
+    return removexattr(path.c_str(), name.c_str());
+  } else{
+    return lremovexattr(path.c_str(), name.c_str());
+  }
 #endif
 #if defined(__FreeBSD__)
 	return extattr_delete_file(path.c_str(), EXTATTR_NAMESPACE_USER, name.c_str());

@@ -31,22 +31,56 @@ test_that("we can do something", {
     expect_identical(class(get_xattr_df(tf)), c("tbl_df", "tbl", "data.frame"))
     expect_true(rm_xattr(tf, "is.rud.setting"))
 
-    # links vs real targets
-    sys::exec_internal("ln", arg = c("-s", tf, tl))
-
     # set and check attribute on tf
     expect_true(set_xattr(tf, "is.rud.setting", "attribute value"))
     expect_true(has_xattrs(tf))
-    expect_true(has_xattrs(tf, follow_symlinks = TRUE))
-
-    # now check symbolic link
-    expect_true(has_xattrs(tl, follow_symlinks = TRUE))
-    expect_false(has_xattrs(tl, follow_symlinks = FALSE))
-
     # remove
     expect_true(rm_xattr(tf, "is.rud.setting"))
 
   }
+
+  # setting attribute using respective OS tool on symbolic link
+  # record in lnok if successful to inform further testing below
+  if(grepl("darwin", utils::sessionInfo()$platform)) {
+    sys::exec_internal("ln", arg = c("-s", tf, tl))
+    lnok <- sys::exec_internal("xattr", arg = c("-s", "-w", "is.rud.setting.ln", "another attribute", tl), error = FALSE)
+  }
+  if(grepl("linux", utils::sessionInfo()$platform)) {
+    sys::exec_internal("ln", arg = c("-s", tf, tl))
+    lnok <- sys::exec_internal("attr", arg = c("-s", "is.rud.setting.ln", "-V", "another attribute", tl), error = FALSE)
+  }
+
+  # check attribute on symbolic link only
+  if(exists("lnok") && !length(lnok$stderr)){
+
+    # check attributes set with OS tool
+    expect_false(has_xattrs(tf))
+    expect_true(has_xattrs(tl, follow_symlinks = FALSE))
+    expect_false(has_xattrs(tl, follow_symlinks = TRUE))
+    expect_identical(list_xattrs(tl, follow_symlinks = FALSE), "is.rud.setting.ln")
+    expect_identical(get_xattr(tl, "is.rud.setting.ln", follow_symlinks = FALSE), "another attribute")
+    expect_equal(get_xattr_size(tl, "is.rud.setting.ln", follow_symlinks = FALSE), 17L)
+    expect_identical(class(get_xattr_df(tl, follow_symlinks = FALSE)), c("tbl_df", "tbl", "data.frame"))
+    expect_true(rm_xattr(tl, "is.rud.setting.ln", follow_symlinks = FALSE))
+
+    # set and check attribute on tl
+    expect_true(set_xattr(tl, "is.rud.setting.ln", "attribute value", follow_symlinks = FALSE))
+    expect_false(has_xattrs(tf))
+    expect_true(set_xattr(tl, "is.rud.setting.f", "attribute data", follow_symlinks = TRUE))
+    expect_true(has_xattrs(tl, follow_symlinks = FALSE))
+    expect_true(has_xattrs(tl, follow_symlinks = TRUE))
+    expect_identical(list_xattrs(tl, follow_symlinks = FALSE), "is.rud.setting")
+    expect_identical(list_xattrs(tl, follow_symlinks = TRUE), "is.rud.setting.f")
+    expect_identical(get_xattr(tl, "is.rud.setting.ln", follow_symlinks = FALSE), "attribute value")
+    expect_equal(get_xattr_size(tl, "is.rud.setting.ln", follow_symlinks = FALSE), 15L)
+    expect_identical(class(get_xattr_df(tl, follow_symlinks = FALSE)), c("tbl_df", "tbl", "data.frame"))
+    #
+    expect_true(rm_xattr(tl, "is.rud.setting.ln", follow_symlinks = FALSE))
+    expect_true(rm_xattr(tl, "is.rud.setting.f", follow_symlinks = TRUE))
+    expect_false(has_xattrs(tf))
+    expect_false(has_xattrs(tl, follow_symlinks = FALSE))
+
+   }
 
   # setting, reading, deleting attributes with internal functions
   expect_true(set_xattr(tf, "is.rud.setting.a", "first attribut"))

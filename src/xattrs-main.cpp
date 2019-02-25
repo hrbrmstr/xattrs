@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 
 #if defined(__linux__)
-#include <attr/xattr.h>
+// #include <attr/xattr.h>
 #define XATTR_NOFOLLOW 0x0001 /* Don't follow symbolic links */
 #endif
 

@@ -16,8 +16,7 @@
 /*
 #include <sys/types.h>
 */
-// #include <attr/xattr.h>
-#include <xattr.h>
+#include <attr/xattr.h>
 #endif
 
 

@@ -1,1 +1,3 @@
 PKG_CXXFLAGS =
+
+#find /opt /usr -nowarn -ignore_readdir_race -name xattr.h -print -quit  2>/dev/null

@@ -1,1 +1,1 @@
-PKG_CXXFLAGS = -I/usr/include/attr -I/usr/include/linux
+PKG_CXXFLAGS =

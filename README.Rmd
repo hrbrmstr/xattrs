@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -50,7 +52,7 @@ options(width=120)
 
 ```{r message=FALSE, warning=FALSE, error=FALSE}
 library(xattrs)
-library(tidyverse)
+library(tidyverse) # for printing
 
 # current verison
 packageVersion("xattrs")
@@ -61,72 +63,123 @@ packageVersion("xattrs")
 
 Extended attributes seem to get stripped when R builds pkgs so until I can figure out an easy way not to do that, just find any file on your system that has an `@` next to the permissions string in an `ls -l` directory listing.
 
-```{r}
-sample_file <- "~/Downloads/Elementary-Lunch-Menu.pdf"
+```{r eval=FALSE}
+sample_file <- "~/Downloads/AdvancedTechniquesWithAWSGlueETLJobs.pdf"
 
 list_xattrs(sample_file)
+## [1] "com.apple.metadata:kMDItemWhereFroms"
+## [2] "com.apple.quarantine"  
 
 get_xattr_size(sample_file, "com.apple.metadata:kMDItemWhereFroms")
+## 157
 ```
 
 Extended attributes can be _anything_ so it makes alot of sense to work with the contents as a raw vector:
 
-```{r}
+```{r eval=FALSE}
 get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms")
+##   [1] 62 70 6c 69 73 74 30 30 a2 01 02 5f 10 6b 68 74 74 70 73 3a 2f
+##  [22] 2f 66 69 6c 65 73 2e 73 6c 61 63 6b 2e 63 6f 6d 2f 66 69 6c 65
+##  [43] 73 2d 70 72 69 2f 54 33 56 31 5a 44 51 48 4d 2d 46 44 4a 47 59
+##  [64] 4b 57 4a 33 2f 64 6f 77 6e 6c 6f 61 64 2f 61 64 76 61 6e 63 65
+##  [85] 64 74 65 63 68 6e 69 71 75 65 73 77 69 74 68 61 77 73 67 6c 75
+## [106] 65 65 74 6c 6a 6f 62 73 5f 5f 31 5f 2e 70 64 66 50 08 0b 79 00
+## [127] 00 00 00 00 00 01 01 00 00 00 00 00 00 00 03 00 00 00 00 00 00
+## [148] 00 00 00 00 00 00 00 00 00 7a
 ```
 
 There is a "string" version of the function, but it may return "nothing" if there are embedded NULLs or other breaking characters in the contents:
 
-```{r}
+```{r eval=FALSE}
 get_xattr(sample_file, "com.apple.metadata:kMDItemWhereFroms")
+## [1] "bplist00\xa2\001\002_\020khttps://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdfP\b\vy"
 ```
 
 You are really better off doing this if you really want a raw string conversion:
 
-```{r}
+```{r eval=FALSE}
 readBin(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"), "character")
+## [1] "bplist00\xa2\001\002_\020khttps://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdfP\b\vy"
 ```
 
 More often than not (on macOS) extended attributes are "binary property lists" (or "binary plist" for short). You can test to see if the returned raw vector is likely a binary plist:
 
-```{r}
+```{r eval=FALSE}
 is_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
+## [1] TRUE
 ```
 
 If it is, you can get the data out of it. For now, this makes a system call to `plutil` on macOS and `plistutil` on other systems. You'll be given a hint on how to install `plistutil` if it's not found.
 
-```{r}
+```{r eval=FALSE}
 read_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
+## $plist
+## $plist$array
+## $plist$array$string
+## $plist$array$string[[1]]
+## [1] "https://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdf"
+## 
+## 
+## $plist$array$string
+## list()
+## 
+## 
+## attr(,"version")
+## [1] "1.0"
 ```
 
 This is R, so you should really consider doing this instead of any of the above #rectanglesrule:
 
-```{r}
+```{r eval=FALSE}
 get_xattr_df(sample_file)
+## # A tibble: 2 x 3
+##   name                                  size contents   
+##   <chr>                                <dbl> <list>     
+## 1 com.apple.metadata:kMDItemWhereFroms   157 <raw [157]>
+## 2 com.apple.quarantine                    56 <raw [56]> 
 ```
 
 you can live dangerously even with data frames, tho:
 
-```{r}
+```{r eval=FALSE}
 get_xattr_df(sample_file) %>% 
   mutate(txt = map_chr(contents, readBin, "character")) # potentially "dangerous"
+## # A tibble: 2 x 4
+##   name                 size contents  txt                            
+##   <chr>               <dbl> <list>    <chr>                          
+## 1 com.apple.metadata…   157 <raw [15… "bplist00\xa2\x01\x02_\x10khtt…
+## 2 com.apple.quaranti…    56 <raw [56… 0083;5bc9c8ca;Slack;44698902-A…
 ```
 
 ### Extended Example
 
 We can process a whole directory of files to see what extended attributes various path targets have:
 
-```{r}
+```{r eval=FALSE}
 fils <- list.files("~/Downloads", full.names = TRUE) 
 
 xdf <- map_df(set_names(fils, fils), get_xattr_df, .id="path")
 
 count(xdf, name, sort=TRUE) 
+## # A tibble: 11 x 2
+##    name                                                     n
+##    <chr>                                                <int>
+##  1 com.apple.quarantine                                    55
+##  2 com.apple.metadata:kMDItemWhereFroms                    46
+##  3 com.apple.lastuseddate#PS                               13
+##  4 com.apple.metadata:_kMDItemUserTags                      3
+##  5 com.apple.metadata:kMDItemDownloadedDate                 2
+##  6 com.apple.diskimages.fsck                                1
+##  7 com.apple.diskimages.recentcksum                         1
+##  8 com.apple.FinderInfo                                     1
+##  9 com.apple.metadata:com_apple_mail_dateReceived           1
+## 10 com.apple.metadata:com_apple_mail_dateSent               1
+## 11 com.apple.metadata:com_apple_mail_isRemoteAttachment     1
 ```
 
 And we can work with `com.apple.metadata:kMDItemWhereFroms` binary plist data in bulk:
 
-```{r}
+```{r eval=FALSE}
 filter(xdf, name == "com.apple.metadata:kMDItemWhereFroms") %>%
   filter(map_lgl(contents, is_bplist)) %>% 
   mutate(converted = map(contents, read_bplist)) %>% 
@@ -134,6 +187,20 @@ filter(xdf, name == "com.apple.metadata:kMDItemWhereFroms") %>%
   mutate(converted = map(converted, ~flatten_chr(.x$plist$array$string))) %>% 
   unnest() %>% 
   mutate(converted = urltools::domain(converted)) # you don't rly need to see the full URLs for this example
+## # A tibble: 44 x 2
+##     size converted                                              
+##    <dbl> <chr>                                                  
+##  1   189 dl.packetstormsecurity.net                             
+##  2   129 files.slack.com                                        
+##  3   120 files.slack.com                                        
+##  4   117 files.slack.com                                        
+##  5   592 irma.nps.gov                                           
+##  6   157 files.slack.com                                        
+##  7   624 github-production-release-asset-2e65be.s3.amazonaws.com
+##  8   197 images.unsplash.com                                    
+##  9   197 images.unsplash.com                                    
+## 10   185 files.slack.com                                        
+## # … with 34 more rows
 ```
 
 ### Full Suite

@@ -40,7 +40,7 @@ devtools::install_github("hrbrmstr/xattrs")
 
 ``` r
 library(xattrs)
-library(tidyverse)
+library(tidyverse) # for printing
 
 # current verison
 packageVersion("xattrs")
@@ -55,13 +55,14 @@ system that has an `@` next to the permissions string in an `ls -l`
 directory listing.
 
 ``` r
-sample_file <- "~/Downloads/Elementary-Lunch-Menu.pdf"
+sample_file <- "~/Downloads/AdvancedTechniquesWithAWSGlueETLJobs.pdf"
 
 list_xattrs(sample_file)
-## [1] "com.apple.metadata:kMDItemWhereFroms" "com.apple.quarantine"
+## [1] "com.apple.metadata:kMDItemWhereFroms"
+## [2] "com.apple.quarantine"  
 
 get_xattr_size(sample_file, "com.apple.metadata:kMDItemWhereFroms")
-## [1] 177
+## 157
 ```
 
 Extended attributes can be *anything* so it makes alot of sense to work
@@ -69,11 +70,14 @@ with the contents as a raw vector:
 
 ``` r
 get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms")
-##   [1] 62 70 6c 69 73 74 30 30 a2 01 02 5f 10 53 68 74 74 70 3a 2f 2f 77 77 77 2e 6d 73 61 64 36 30 2e 6f 72 67 2f 77 70
-##  [39] 2d 63 6f 6e 74 65 6e 74 2f 75 70 6c 6f 61 64 73 2f 32 30 31 37 2f 30 31 2f 45 6c 65 6d 65 6e 74 61 72 79 2d 46 65
-##  [77] 62 72 75 61 72 79 2d 4c 75 6e 63 68 2d 4d 65 6e 75 2e 70 64 66 5f 10 2a 68 74 74 70 3a 2f 2f 77 77 77 2e 6d 73 61
-## [115] 64 36 30 2e 6f 72 67 2f 62 6c 6f 67 2f 66 65 62 72 75 61 72 79 2d 6d 65 6e 75 73 2f 08 0b 61 00 00 00 00 00 00 01
-## [153] 01 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 8e
+##   [1] 62 70 6c 69 73 74 30 30 a2 01 02 5f 10 6b 68 74 74 70 73 3a 2f
+##  [22] 2f 66 69 6c 65 73 2e 73 6c 61 63 6b 2e 63 6f 6d 2f 66 69 6c 65
+##  [43] 73 2d 70 72 69 2f 54 33 56 31 5a 44 51 48 4d 2d 46 44 4a 47 59
+##  [64] 4b 57 4a 33 2f 64 6f 77 6e 6c 6f 61 64 2f 61 64 76 61 6e 63 65
+##  [85] 64 74 65 63 68 6e 69 71 75 65 73 77 69 74 68 61 77 73 67 6c 75
+## [106] 65 65 74 6c 6a 6f 62 73 5f 5f 31 5f 2e 70 64 66 50 08 0b 79 00
+## [127] 00 00 00 00 00 01 01 00 00 00 00 00 00 00 03 00 00 00 00 00 00
+## [148] 00 00 00 00 00 00 00 00 00 7a
 ```
 
 There is a “string” version of the function, but it may return “nothing”
@@ -82,7 +86,7 @@ contents:
 
 ``` r
 get_xattr(sample_file, "com.apple.metadata:kMDItemWhereFroms")
-## [1] "bplist00\xa2\001\002_\020Shttp://www.msad60.org/wp-content/uploads/2017/01/Elementary-February-Lunch-Menu.pdf_\020*http://www.msad60.org/blog/february-menus/\b\va"
+## [1] "bplist00\xa2\001\002_\020khttps://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdfP\b\vy"
 ```
 
 You are really better off doing this if you really want a raw string
@@ -90,7 +94,7 @@ conversion:
 
 ``` r
 readBin(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"), "character")
-## [1] "bplist00\xa2\001\002_\020Shttp://www.msad60.org/wp-content/uploads/2017/01/Elementary-February-Lunch-Menu.pdf_\020*http://www.msad60.org/blog/february-menus/\b\va"
+## [1] "bplist00\xa2\001\002_\020khttps://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdfP\b\vy"
 ```
 
 More often than not (on macOS) extended attributes are “binary property
@@ -114,13 +118,11 @@ read_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
 ## $plist$array
 ## $plist$array$string
 ## $plist$array$string[[1]]
-## [1] "http://www.msad60.org/wp-content/uploads/2017/01/Elementary-February-Lunch-Menu.pdf"
+## [1] "https://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdf"
 ## 
 ## 
 ## $plist$array$string
-## $plist$array$string[[1]]
-## [1] "http://www.msad60.org/blog/february-menus/"
-## 
+## list()
 ## 
 ## 
 ## attr(,"version")
@@ -135,8 +137,8 @@ get_xattr_df(sample_file)
 ## # A tibble: 2 x 3
 ##   name                                  size contents   
 ##   <chr>                                <dbl> <list>     
-## 1 com.apple.metadata:kMDItemWhereFroms  177. <raw [177]>
-## 2 com.apple.quarantine                   68. <raw [68]>
+## 1 com.apple.metadata:kMDItemWhereFroms   157 <raw [157]>
+## 2 com.apple.quarantine                    56 <raw [56]> 
 ```
 
 you can live dangerously even with data frames, tho:
@@ -145,10 +147,10 @@ you can live dangerously even with data frames, tho:
 get_xattr_df(sample_file) %>% 
   mutate(txt = map_chr(contents, readBin, "character")) # potentially "dangerous"
 ## # A tibble: 2 x 4
-##   name                                  size contents    txt                                                           
-##   <chr>                                <dbl> <list>      <chr>                                                         
-## 1 com.apple.metadata:kMDItemWhereFroms  177. <raw [177]> "bplist00\xa2\x01\x02_\x10Shttp://www.msad60.org/wp-content/u…
-## 2 com.apple.quarantine                   68. <raw [68]>  0083;5891d3e4;Google Chrome.app;FF4E968A-9E06-4C79-B4CA-C6A31…
+##   name                 size contents  txt                            
+##   <chr>               <dbl> <list>    <chr>                          
+## 1 com.apple.metadata…   157 <raw [15… "bplist00\xa2\x01\x02_\x10khtt…
+## 2 com.apple.quaranti…    56 <raw [56… 0083;5bc9c8ca;Slack;44698902-A…
 ```
 
 ### Extended Example
@@ -162,13 +164,20 @@ fils <- list.files("~/Downloads", full.names = TRUE)
 xdf <- map_df(set_names(fils, fils), get_xattr_df, .id="path")
 
 count(xdf, name, sort=TRUE) 
-## # A tibble: 4 x 2
-##   name                                         n
-##   <chr>                                    <int>
-## 1 com.apple.quarantine                        28
-## 2 com.apple.metadata:kMDItemWhereFroms        23
-## 3 com.apple.metadata:_kMDItemUserTags          8
-## 4 com.apple.metadata:kMDItemDownloadedDate     1
+## # A tibble: 11 x 2
+##    name                                                     n
+##    <chr>                                                <int>
+##  1 com.apple.quarantine                                    55
+##  2 com.apple.metadata:kMDItemWhereFroms                    46
+##  3 com.apple.lastuseddate#PS                               13
+##  4 com.apple.metadata:_kMDItemUserTags                      3
+##  5 com.apple.metadata:kMDItemDownloadedDate                 2
+##  6 com.apple.diskimages.fsck                                1
+##  7 com.apple.diskimages.recentcksum                         1
+##  8 com.apple.FinderInfo                                     1
+##  9 com.apple.metadata:com_apple_mail_dateReceived           1
+## 10 com.apple.metadata:com_apple_mail_dateSent               1
+## 11 com.apple.metadata:com_apple_mail_isRemoteAttachment     1
 ```
 
 And we can work with `com.apple.metadata:kMDItemWhereFroms` binary plist
@@ -182,20 +191,20 @@ filter(xdf, name == "com.apple.metadata:kMDItemWhereFroms") %>%
   mutate(converted = map(converted, ~flatten_chr(.x$plist$array$string))) %>% 
   unnest() %>% 
   mutate(converted = urltools::domain(converted)) # you don't rly need to see the full URLs for this example
-## # A tibble: 23 x 2
-##     size converted                                                       
-##    <dbl> <chr>                                                           
-##  1  143. eprint.ncl.ac.uk                                                
-##  2  117. files.slack.com                                                 
-##  3  592. irma.nps.gov                                                    
-##  4  110. apps.start.umd.edu                                              
-##  5 1510. aws-athena-query-results-181646978271-us-east-1.s3.amazonaws.com
-##  6  145. www.eac.gov                                                     
-##  7  177. www.msad60.org                                                  
-##  8  185. www.telerik.com                                                 
-##  9  152. www.gess-inc.com                                                
-## 10  134. files.slack.com                                                 
-## # ... with 13 more rows
+## # A tibble: 44 x 2
+##     size converted                                              
+##    <dbl> <chr>                                                  
+##  1   189 dl.packetstormsecurity.net                             
+##  2   129 files.slack.com                                        
+##  3   120 files.slack.com                                        
+##  4   117 files.slack.com                                        
+##  5   592 irma.nps.gov                                           
+##  6   157 files.slack.com                                        
+##  7   624 github-production-release-asset-2e65be.s3.amazonaws.com
+##  8   197 images.unsplash.com                                    
+##  9   197 images.unsplash.com                                    
+## 10   185 files.slack.com                                        
+## # … with 34 more rows
 ```
 
 ### Full Suite
@@ -244,11 +253,12 @@ get_xattr_df(tf)
 ## # A tibble: 2 x 3
 ##   name              size contents  
 ##   <chr>            <dbl> <list>    
-## 1 is.rud.setting.a   15. <raw [15]>
-## 2 is.rud.setting.b   16. <raw [16]>
+## 1 is.rud.setting.a    15 <raw [15]>
+## 2 is.rud.setting.b    16 <raw [16]>
 
 # remove attribute
 rm_xattr(tf, "is.rud.setting")
+## Warning: Error -1 while removing attribute.
 get_xattr(tf, "is.rud.setting")
 ## character(0)
 

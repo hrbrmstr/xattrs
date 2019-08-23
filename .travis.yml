@@ -1,6 +1,14 @@
-language: R
-sudo: false
+language: r
 cache: packages
+matrix:
+  include:
+    - dist: trusty
+    - dist: xenial
+      env: R_CODECOV=true
+      r_packages: covr
+    - dist: bionic
+    - os: osx
+      osx_image: xcode10.2
 
 after_success:
 - Rscript -e 'covr::codecov()'

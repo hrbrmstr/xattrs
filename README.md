@@ -5,7 +5,7 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 [![Signed
 by](https://img.shields.io/badge/Keybase-Verified-brightgreen.svg)](https://keybase.io/hrbrmstr)
 ![Signed commit
-%](https://img.shields.io/badge/Signed_Commits-22.0%25-lightgrey.svg)
+%](https://img.shields.io/badge/Signed_Commits-100%25-lightgrey.svg)
 [![Linux build
 Status](https://travis-ci.org/hrbrmstr/xattrs.svg?branch=master)](https://travis-ci.org/hrbrmstr/xattrs)
 [![Coverage
@@ -52,7 +52,11 @@ The following functions are implemented:
 ``` r
 install.packages("xattrs", repos = "https://cinc.rud.is")
 # or
+remotes::install_git("https://git.rud.is/hrbrmstr/xattrs.git")
+# or
 remotes::install_gitlab("hrbrmstr/xattrs")
+# or
+remotes::install_bitbucket("hrbrmstr/xattrs")
 # or
 remotes::install_github("hrbrmstr/xattrs")
 ```
@@ -299,7 +303,7 @@ unlink(tf)
 | Lang         | \# Files |  (%) | LoC |  (%) | Blank lines |  (%) | \# Lines |  (%) |
 | :----------- | -------: | ---: | --: | ---: | ----------: | ---: | -------: | ---: |
 | C/C++ Header |        1 | 0.06 | 283 | 0.35 |          69 | 0.29 |       90 | 0.22 |
-| R            |       13 | 0.76 | 240 | 0.30 |          86 | 0.36 |      158 | 0.38 |
+| R            |       13 | 0.76 | 240 | 0.30 |          85 | 0.35 |      158 | 0.38 |
 | C++          |        2 | 0.12 | 228 | 0.28 |          33 | 0.14 |       26 | 0.06 |
 | Rmd          |        1 | 0.06 |  49 | 0.06 |          54 | 0.22 |      138 | 0.33 |
 

@@ -44,7 +44,6 @@ convert_plist <- function(path) {
 
 }
 
-
 # Linux: attributes are prefixed with a namespace, that is,
 # an attribute has the form: namespace.attribute
 # Examples: user.mime_type, trusted.md5sum, system.posix_acl_access

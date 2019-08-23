@@ -54,6 +54,8 @@ install.packages("xattrs", repos = "https://cinc.rud.is")
 # or
 remotes::install_git("https://git.rud.is/hrbrmstr/xattrs.git")
 # or
+remotes::install_git("https://git.sr.ht/~hrbrmstr/xattrs")
+# or
 remotes::install_gitlab("hrbrmstr/xattrs")
 # or
 remotes::install_bitbucket("hrbrmstr/xattrs")

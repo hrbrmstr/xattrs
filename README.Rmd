@@ -1,25 +1,19 @@
 ---
-output: github_document
-editor_options: 
-  chunk_output_type: console
+output: 
+  rmarkdown::github_document:
+    df_print: kable
 ---
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "##",
-  fig.path = "README-"
-)
+```{r pkg-knitr-opts, include=FALSE}
+hrbrpkghelpr::global_opts()
 ```
 
-# xattrs
+```{r badges, results='asis', echo=FALSE, cache=FALSE}
+hrbrpkghelpr::stinking_badges()
+```
 
-Work With Filesystem Object Extended Attributes
-
-## Description
-
-Filesystem path target extended attributes store extra, customizable, small bits of info. For example, author name, file character encoding, short comments, security status, etc. Methods are provided to list, extract and work with these attributes.
+```{r description, results='asis', echo=FALSE, cache=FALSE}
+hrbrpkghelpr::yank_title_and_description()
+```
 
 ## NOTE
 
@@ -29,28 +23,19 @@ I don't think this will work on Windows.
 
 The following functions are implemented:
 
-- `get_xattr`:	Retrieve the contents of the named xattr
-- `get_xattr_df`:	Retrieve a data frame of xattr names, sizes and (raw) contents for a target path
-- `get_xattr_raw`:	Retrieve the (raw) contents of the named xattr
-- `get_xattr_size`:	Retrieve the size (bytes) of the named xattr
-- `has_xattrs`:	Test if a target path has xattrs
-- `is_bplist`:	Tests whether a raw vector is really a binary plist
-- `list_xattrs`:	List extended attribute names of a target path
-- `read_bplist`:	Convert binary plist to something usable in R
+```{r ingredients, results='asis', echo=FALSE, cache=FALSE}
+hrbrpkghelpr::describe_ingredients()
+```
 
 ## Installation
 
-```{r eval=FALSE}
-devtools::install_github("hrbrmstr/xattrs")
-```
-
-```{r message=FALSE, warning=FALSE, error=FALSE, include=FALSE}
-options(width=120)
+```{r install-ex, results='asis', echo=FALSE, cache=FALSE}
+hrbrpkghelpr::install_block()
 ```
 
 ## Usage
 
-```{r message=FALSE, warning=FALSE, error=FALSE}
+```{r usage, cache=FALSE}
 library(xattrs)
 library(tidyverse) # for printing
 
@@ -63,7 +48,7 @@ packageVersion("xattrs")
 
 Extended attributes seem to get stripped when R builds pkgs so until I can figure out an easy way not to do that, just find any file on your system that has an `@` next to the permissions string in an `ls -l` directory listing.
 
-```{r eval=FALSE}
+```{r 1, eval=FALSE}
 sample_file <- "~/Downloads/AdvancedTechniquesWithAWSGlueETLJobs.pdf"
 
 list_xattrs(sample_file)
@@ -76,7 +61,7 @@ get_xattr_size(sample_file, "com.apple.metadata:kMDItemWhereFroms")
 
 Extended attributes can be _anything_ so it makes alot of sense to work with the contents as a raw vector:
 
-```{r eval=FALSE}
+```{r 2, eval=FALSE}
 get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms")
 ##   [1] 62 70 6c 69 73 74 30 30 a2 01 02 5f 10 6b 68 74 74 70 73 3a 2f
 ##  [22] 2f 66 69 6c 65 73 2e 73 6c 61 63 6b 2e 63 6f 6d 2f 66 69 6c 65
@@ -90,28 +75,28 @@ get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms")
 
 There is a "string" version of the function, but it may return "nothing" if there are embedded NULLs or other breaking characters in the contents:
 
-```{r eval=FALSE}
+```{r 3, eval=FALSE}
 get_xattr(sample_file, "com.apple.metadata:kMDItemWhereFroms")
 ## [1] "bplist00\xa2\001\002_\020khttps://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdfP\b\vy"
 ```
 
 You are really better off doing this if you really want a raw string conversion:
 
-```{r eval=FALSE}
+```{r 4, eval=FALSE}
 readBin(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"), "character")
 ## [1] "bplist00\xa2\001\002_\020khttps://files.slack.com/files-pri/T3V1ZDQHM-FDJGYKWJ3/download/advancedtechniqueswithawsglueetljobs__1_.pdfP\b\vy"
 ```
 
 More often than not (on macOS) extended attributes are "binary property lists" (or "binary plist" for short). You can test to see if the returned raw vector is likely a binary plist:
 
-```{r eval=FALSE}
+```{r 5, eval=FALSE}
 is_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
 ## [1] TRUE
 ```
 
 If it is, you can get the data out of it. For now, this makes a system call to `plutil` on macOS and `plistutil` on other systems. You'll be given a hint on how to install `plistutil` if it's not found.
 
-```{r eval=FALSE}
+```{r 6, eval=FALSE}
 read_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
 ## $plist
 ## $plist$array
@@ -130,7 +115,7 @@ read_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
 
 This is R, so you should really consider doing this instead of any of the above #rectanglesrule:
 
-```{r eval=FALSE}
+```{r 7, eval=FALSE}
 get_xattr_df(sample_file)
 ## # A tibble: 2 x 3
 ##   name                                  size contents   
@@ -141,7 +126,7 @@ get_xattr_df(sample_file)
 
 you can live dangerously even with data frames, tho:
 
-```{r eval=FALSE}
+```{r 8, eval=FALSE}
 get_xattr_df(sample_file) %>% 
   mutate(txt = map_chr(contents, readBin, "character")) # potentially "dangerous"
 ## # A tibble: 2 x 4
@@ -155,7 +140,7 @@ get_xattr_df(sample_file) %>%
 
 We can process a whole directory of files to see what extended attributes various path targets have:
 
-```{r eval=FALSE}
+```{r 9, eval=FALSE}
 fils <- list.files("~/Downloads", full.names = TRUE) 
 
 xdf <- map_df(set_names(fils, fils), get_xattr_df, .id="path")
@@ -179,7 +164,7 @@ count(xdf, name, sort=TRUE)
 
 And we can work with `com.apple.metadata:kMDItemWhereFroms` binary plist data in bulk:
 
-```{r eval=FALSE}
+```{r 10, eval=FALSE}
 filter(xdf, name == "com.apple.metadata:kMDItemWhereFroms") %>%
   filter(map_lgl(contents, is_bplist)) %>% 
   mutate(converted = map(contents, read_bplist)) %>% 
@@ -205,7 +190,7 @@ filter(xdf, name == "com.apple.metadata:kMDItemWhereFroms") %>%
 
 ### Full Suite
 
-```{r}
+```{r full-suite}
 # Create a temp file for the example
 tf <- tempfile(fileext = ".csv")
 write.csv(mtcars, tf)
@@ -245,6 +230,12 @@ get_xattr(tf, "is.rud.setting")
 unlink(tf)
 ```
 
+## xattrs Metrics
+
+```{r cloc, echo=FALSE}
+cloc::cloc_pkg_md()
+```
+
 ## Code of Conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.

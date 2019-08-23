@@ -19,7 +19,6 @@
 #include <attr/xattr.h>
 #endif
 
-
 #if defined(__FreeBSD__)
 #include <sys/extattr.h>
 #endif
@@ -45,7 +44,6 @@ inline int setxattr(int fd, const std::string &name, const std::string &value, i
 #endif
 }
 */
-
 
 inline int setxattr(const std::string path, const std::string &name, const std::string &value, int options=0)
 {

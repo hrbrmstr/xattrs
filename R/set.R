@@ -9,10 +9,10 @@
 #' @example inst/examples/ex1.R
 set_xattr <- function(path, name, value, follow_symlinks=TRUE) {
 
-  path <- path.expand(path)
+  path <- path.expand(path[1])
   if (!file.exists(path)) stop("File not found.", call.=FALSE)
 
-  name <- handle_user_prefix_param(name)
+  name <- handle_user_prefix_param(name[1])
 
   value <- value[1]
   if (is.character(value)) value <- charToRaw(value)

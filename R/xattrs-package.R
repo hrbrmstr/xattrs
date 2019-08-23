@@ -13,4 +13,4 @@
 #' @importFrom sys exec_internal
 #' @importFrom Rcpp sourceCpp
 #' @example inst/examples/ex1.R
-NULL
+"_PACKAGE"

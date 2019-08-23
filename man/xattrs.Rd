@@ -50,6 +50,14 @@ get_xattr(tf, "is.rud.setting")
 unlink(tf)
 
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://gitlab.com/hrbrmstr/xattrs}
+  \item Report bugs at \url{https://gitlab.com/hrbrmstr/xattrs/issues}
+}
+
+}
 \author{
 Bob Rudis (bob@rud.is)
 }

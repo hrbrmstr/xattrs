@@ -8,7 +8,7 @@
 #' @example inst/examples/ex1.R
 rm_xattr <- function(path, name, follow_symlinks=TRUE) {
 
-  path <- path.expand(path)
+  path <- path.expand(path[1])
   if (!file.exists(path)) stop("File not found.", call.=FALSE)
 
   name <- handle_user_prefix_param(name)

@@ -1,8 +1,8 @@
 Package: xattrs
 Type: Package
 Title: Work With Filesystem Object Extended Attributes
-Version: 0.1.0
-Date: 2018-05-30
+Version: 0.1.1
+Date: 2019-08-23
 Authors@R: c(
     person("Bob", "Rudis", email = "bob@rud.is", role = c("aut", "cre"), 
            comment = c(ORCID = "0000-0001-5670-2640")),
@@ -14,8 +14,8 @@ Description: Filesystem path target extended attributes store extra, customizabl
     small bits of info. For example, author name, file character encoding, short 
     comments, security status, etc. Methods are provided to list, extract and work 
     with these attributes.
-URL: https://github.com/hrbrmstr/xattrs
-BugReports: https://github.com/hrbrmstr/xattrs/issues
+URL: https://gitlab.com/hrbrmstr/xattrs
+BugReports: https://gitlab.com/hrbrmstr/xattrs/issues
 Encoding: UTF-8
 License: MIT + file LICENSE
 Suggests:

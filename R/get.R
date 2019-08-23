@@ -8,7 +8,7 @@
 #' @example inst/examples/ex1.R
 get_xattr <- function(path, name, follow_symlinks=TRUE) {
 
-  path <- path.expand(path)
+  path <- path.expand(path[1])
   if (!file.exists(path)) stop("File not found.", call.=FALSE)
 
   name <- handle_user_prefix_param(name)
@@ -27,10 +27,10 @@ get_xattr <- function(path, name, follow_symlinks=TRUE) {
 #' @example inst/examples/ex1.R
 get_xattr_raw <- function(path, name, follow_symlinks=TRUE) {
 
-  path <- path.expand(path)
+  path <- path.expand(path[1])
   if (!file.exists(path)) stop("File not found.", call.=FALSE)
 
-  name <- handle_user_prefix_param(name)
+  name <- handle_user_prefix_param(name[1])
 
   ret <- rcpp_get_xattr_raw(path, name, follow_symlinks)
 
@@ -46,10 +46,10 @@ get_xattr_raw <- function(path, name, follow_symlinks=TRUE) {
 #' @example inst/examples/ex1.R
 get_xattr_size <- function(path, name, follow_symlinks=TRUE) {
 
-  path <- path.expand(path)
+  path <- path.expand(path[1])
   if (!file.exists(path)) stop("File not found.", call.=FALSE)
 
-  name <- handle_user_prefix_param(name)
+  name <- handle_user_prefix_param(name[1])
 
   ret <- rcpp_get_xattr_size(path, name, follow_symlinks)
 

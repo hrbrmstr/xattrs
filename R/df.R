@@ -7,6 +7,7 @@
 #' @example inst/examples/ex1.R
 get_xattr_df <- function(path, follow_symlinks = TRUE) {
 
+  path <- path.expand(path[1])
   xattr_list <- rcpp_get_xattr_df(path, follow_symlinks)
   class(xattr_list$contents) <- c("AsIs", "list")
   xdf <- as.data.frame(xattr_list, stringsAsFactors=FALSE)

@@ -1,5 +1,18 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+[![Project Status: Active – The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Signed
+by](https://img.shields.io/badge/Keybase-Verified-brightgreen.svg)](https://keybase.io/hrbrmstr)
+![Signed commit
+%](https://img.shields.io/badge/Signed_Commits-22.0%25-lightgrey.svg)
+[![Linux build
+Status](https://travis-ci.org/hrbrmstr/xattrs.svg?branch=master)](https://travis-ci.org/hrbrmstr/xattrs)
+[![Coverage
+Status](https://codecov.io/gh/hrbrmstr/xattrs/branch/master/graph/badge.svg)](https://codecov.io/gh/hrbrmstr/xattrs)
+![Minimal R
+Version](https://img.shields.io/badge/R%3E%3D-3.2.0-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 # xattrs
 
@@ -20,21 +33,32 @@ I don’t think this will work on Windows.
 
 The following functions are implemented:
 
-  - `get_xattr`: Retrieve the contents of the named xattr
   - `get_xattr_df`: Retrieve a data frame of xattr names, sizes and
     (raw) contents for a target path
-  - `get_xattr_raw`: Retrieve the (raw) contents of the named xattr
-  - `get_xattr_size`: Retrieve the size (bytes) of the named xattr
+  - `get_xattr_raw`: Get raw contents of an extended attribute
+  - `get_xattr_size`: Get size of an extended attribute
+  - `get_xattr`: Get an extended attribute
+  - `handle_user_prefix_param`: handle\_user\_prefix\_param
+  - `handle_user_prefix_return`: handle\_user\_prefix\_return
   - `has_xattrs`: Test if a target path has xattrs
   - `is_bplist`: Tests whether a raw vector is really a binary plist
-  - `list_xattrs`: List extended attribute names of a target path
+  - `list_xattrs`: List attributes
   - `read_bplist`: Convert binary plist to something usable in R
+  - `rm_xattr`: Remove an extended attribute
+  - `set_xattr`: Set or modify an extended attribute
 
 ## Installation
 
 ``` r
-devtools::install_github("hrbrmstr/xattrs")
+install.packages("xattrs", repos = "https://cinc.rud.is")
+# or
+remotes::install_gitlab("hrbrmstr/xattrs")
+# or
+remotes::install_github("hrbrmstr/xattrs")
 ```
+
+NOTE: To use the ‘remotes’ install options you will need to have the
+[{remotes} package](https://github.com/r-lib/remotes) installed.
 
 ## Usage
 
@@ -44,7 +68,7 @@ library(tidyverse) # for printing
 
 # current verison
 packageVersion("xattrs")
-## [1] '0.1.0'
+## [1] '0.1.1'
 ```
 
 ### Basic Operation
@@ -99,8 +123,7 @@ readBin(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"), "cha
 
 More often than not (on macOS) extended attributes are “binary property
 lists” (or “binary plist” for short). You can test to see if the
-returned raw vector is likely a binary
-plist:
+returned raw vector is likely a binary plist:
 
 ``` r
 is_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
@@ -109,8 +132,7 @@ is_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
 
 If it is, you can get the data out of it. For now, this makes a system
 call to `plutil` on macOS and `plistutil` on other systems. You’ll be
-given a hint on how to install `plistutil` if it’s not
-found.
+given a hint on how to install `plistutil` if it’s not found.
 
 ``` r
 read_bplist(get_xattr_raw(sample_file, "com.apple.metadata:kMDItemWhereFroms"))
@@ -250,15 +272,21 @@ list_xattrs(tf)
 
 # data frame vs individual functions
 get_xattr_df(tf)
-## # A tibble: 2 x 3
-##   name              size contents  
-##   <chr>            <dbl> <list>    
-## 1 is.rud.setting.a    15 <raw [15]>
-## 2 is.rud.setting.b    16 <raw [16]>
+```
+
+<div class="kable-table">
+
+| name             | size | contents                                                                                                  |
+| :--------------- | ---: | :-------------------------------------------------------------------------------------------------------- |
+| is.rud.setting.a |   15 | as.raw(c(0x66, 0x69, 0x72, 0x73, 0x74, 0x20, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65))       |
+| is.rud.setting.b |   16 | as.raw(c(0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x20, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65)) |
+
+</div>
+
+``` r
 
 # remove attribute
 rm_xattr(tf, "is.rud.setting")
-## Warning: Error -1 while removing attribute.
 get_xattr(tf, "is.rud.setting")
 ## character(0)
 
@@ -266,8 +294,17 @@ get_xattr(tf, "is.rud.setting")
 unlink(tf)
 ```
 
+## xattrs Metrics
+
+| Lang         | \# Files |  (%) | LoC |  (%) | Blank lines |  (%) | \# Lines |  (%) |
+| :----------- | -------: | ---: | --: | ---: | ----------: | ---: | -------: | ---: |
+| C/C++ Header |        1 | 0.06 | 283 | 0.35 |          69 | 0.29 |       90 | 0.22 |
+| R            |       13 | 0.76 | 240 | 0.30 |          86 | 0.36 |      158 | 0.38 |
+| C++          |        2 | 0.12 | 228 | 0.28 |          33 | 0.14 |       26 | 0.06 |
+| Rmd          |        1 | 0.06 |  49 | 0.06 |          54 | 0.22 |      138 | 0.33 |
+
 ## Code of Conduct
 
-Please note that this project is released with a [Contributor Code of
-Conduct](CONDUCT.md). By participating in this project you agree to
-abide by its terms.
+Please note that this project is released with a Contributor Code of
+Conduct. By participating in this project you agree to abide by its
+terms.
